@@ -71,6 +71,10 @@ API will be available at `http://localhost:8000/api`
 
 ## API Endpoints
 
+### Docs
+
+Postman Docs will be available at `https://documenter.getpostman.com/view/26153121/2sBXiesZZx`
+
 ### Auth
 | Method | Endpoint | Description |
 |--------|----------|-------------|
