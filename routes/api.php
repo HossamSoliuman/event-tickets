@@ -1,28 +1,69 @@
 <?php
 
-use App\Http\Controllers\AuthenticationController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\API\EventController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| Public Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
 */
 
-Route::post('login', [AuthenticationController::class, 'login']);
-//Route::post('register', [AuthenticationController::class, 'register']);
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+Route::prefix('events')->group(function () {
+    Route::get('/', [EventController::class, 'index']);
+    Route::get('/{id}', [EventController::class, 'show']);
+});
+
+Route::post('/webhook/stripe', [PaymentController::class, 'handleWebhook']);
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('auth')->group(function () {
-        Route::get('user', function (Request $request) {
-            return $request->user();
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index']);
+        Route::post('/', [OrderController::class, 'store']);
+        Route::get('/{id}', [OrderController::class, 'show']);
+    });
+    Route::prefix('payments')->group(function () {
+        Route::post('/create-intent', [PaymentController::class, 'createIntent']);
+        Route::post('/confirm', [PaymentController::class, 'confirmPayment']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Routes
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/stats', [DashboardController::class, 'stats']);
+        Route::prefix('orders')->group(function () {
+            Route::get('/', [AdminOrderController::class, 'index']);
+            Route::get('/{id}', [AdminOrderController::class, 'show']);
         });
-        Route::post('logout', [AuthenticationController::class, 'logout']);
-        Route::post('update', [AuthenticationController::class, 'update']);
+        Route::prefix('events')->group(function () {
+            Route::get('/', [AdminEventController::class, 'index']);
+            Route::post('/', [AdminEventController::class, 'store']);
+            Route::get('/{id}', [AdminEventController::class, 'show']);
+            Route::put('/{id}', [AdminEventController::class, 'update']);
+            Route::delete('/{id}', [AdminEventController::class, 'destroy']);
+        });
     });
 });
