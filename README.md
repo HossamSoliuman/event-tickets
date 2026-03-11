@@ -19,8 +19,8 @@ A RESTful API backend for an event ticketing system built with Laravel 11, MySQL
 ### 1. Clone & Install Dependencies
 
 ```bash
-git clone <repo-url>
-cd event-ticketing-backend
+git clone https://github.com/HossamSoliuman/event-tickets
+cd event-tickets
 composer install
 ```
 
